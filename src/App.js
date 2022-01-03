@@ -1,24 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import { useEffect, useState } from "react";
+import Form from "./components/Form";
+import Notes from "./components/Notes";
 
 function App() {
+  const [notes, setNotes] = useState([]);
+
+  useEffect(() => {
+    firstLoad();
+  }, []);
+
+  const firstLoad = () => {
+    fetch("http://localhost:7777/notes")
+      .then((resp) => resp.json())
+      .then(function (data) {
+        setNotes(data);
+      });
+  };
+
+  const onAdd = (props) => {
+    let fetchData = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: 0,
+        content: props,
+      }),
+    };
+    fetch("http://localhost:7777/notes", fetchData).then((resp) => {
+      if (resp.ok) {
+        firstLoad();
+      }
+    });
+  };
+
+  const onHandleDelete = (id) => {
+    fetch(`http://localhost:7777/notes/${id}`, { method: "DELETE" }).then(
+      (resp) => {
+        if (resp.ok) {
+          firstLoad();
+        }
+      }
+    );
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h1>Notes</h1>
+      <button onClick={firstLoad}>update</button>
+      <Notes onDelete={onHandleDelete} notes={notes} />
+      <Form onSub={onAdd} />
+    </>
   );
 }
 
